@@ -1,0 +1,6 @@
+file(GLOB examples *.f90)
+foreach(ex ${examples})
+    get_filename_component(ex_name ${ex} NAME_WE)
+    add_executable(${ex_name} ${ex})
+    target_link_libraries(${ex_name} fpgf)
+endforeach(ex)
