@@ -34,9 +34,11 @@ contains
         integer :: i
 
         write (u,*) '\addplot+['
-        do i = 1,size(this%attrs)
-            call this%attrs(i)%write(u)
-        end do
+        if (allocated(this%attrs)) then
+            do i = 1,size(this%attrs)
+                call this%attrs(i)%write(u)
+            end do
+        end if
         write (u,*) '] coordinates {'
         do i = 1,min(size(this%x), size(this%y))
             write (u,*) '(',this%x(i), ',', this%y(i), ')'
@@ -67,12 +69,26 @@ contains
         class(PlotAttr), intent(in), optional :: attrs(:)
         real, intent(in) :: x(:), y(:)
 
+        type(Data2D), allocatable :: datatmp(:)
+
         if (allocated(this%data2d)) then
+            allocate(datatmp(size(this%data2d)+1))
+            datatmp(:size(this%data2d)) = this%data2d
+            datatmp(size(datatmp))%x = x
+            datatmp(size(datatmp))%y = y
+            if (present(attrs)) then
+                allocate(datatmp(size(this%data2d)+1)%attrs, source=attrs)
+            end if
+            deallocate(this%data2d)
+            allocate(this%data2d, source=datatmp)
+            deallocate(datatmp)
         else
             allocate(this%data2d(1))
             allocate(this%data2d(1)%x, source=x)
             allocate(this%data2d(1)%y, source=y)
-            allocate(this%data2d(1)%attrs, source=attrs)
+            if (present(attrs)) then
+                allocate(this%data2d(1)%attrs, source=attrs)
+            end if
         end if
     end subroutine plot2d_add
 
