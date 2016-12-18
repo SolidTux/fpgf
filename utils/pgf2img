@@ -1,0 +1,27 @@
+#!/usr/bin/bash
+
+OLDDIR="$(pwd)"
+FILENAME="$(realpath $1)"
+OUTFILE="$(realpath $2)"
+TMPDIR="$(mktemp -d)"
+pushd "$TMPDIR"
+cat <<EOD > tmp.tex
+\documentclass{article}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.12}
+\usepgfplotslibrary{external}
+\tikzexternalize%
+
+\begin{document}
+\begin{figure}
+EOD
+cat "$FILENAME" >> tmp.tex
+cat <<EOD >>tmp.tex
+\end{figure}
+\end{document}
+EOD
+pdflatex -shell-escape -interaction=nonstopmode tmp.tex
+convert -density 300 tmp-figure0.pdf "$OUTFILE"
+cp tmp.tex "$OLDDIR"
+popd
+rm -R "$TMPDIR"

@@ -12,7 +12,7 @@ module mod_plot2d
 
     type, public :: Plot2D
         integer :: n
-        character(len=100) :: filename
+        character(:), allocatable :: filename
         type(Axis) :: axis
         type(Data2D), allocatable :: data2d(:)
     contains
@@ -32,9 +32,9 @@ contains
         integer :: i
 
         write (u,*) '\addplot'
-        write (u,*) 'table{'
+        write (u,*) 'coordinates {'
         do i = 1,min(size(this%x), size(this%y))
-            write (u,*) this%x(i), ',', this%y(i)
+            write (u,*) '(',this%x(i), ',', this%y(i), ')'
         end do
         write (u,*) '};'
     end subroutine data2d_write
@@ -46,13 +46,13 @@ contains
 
         open (newunit=u, file=this%filename)
         call write_head(u)
-        call this%axis%foot(u)
+        call this%axis%head(u)
 
         do i = 1,size(this%data2d)
             call this%data2d(i)%write(u)
         end do
 
-        call this%axis%head(u)
+        call this%axis%foot(u)
         call write_foot(u)
         close (u)
     end subroutine plot2d_write
@@ -75,6 +75,7 @@ contains
         class(Plot2D), intent(inout) :: this
 
         if (allocated(this%data2d)) deallocate(this%data2d)
+        if (allocated(this%filename)) deallocate(this%filename)
     end subroutine plot2d_close
 
     function new_plot2d(fn)
