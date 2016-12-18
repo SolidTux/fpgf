@@ -19,6 +19,7 @@ module mod_plot2d
         type(Data2D), allocatable :: data2d(:)
     contains
         procedure :: add => plot2d_add
+        procedure :: addAttr => plot2d_addattr
         procedure :: write => plot2d_write
         procedure :: close => plot2d_close
     end type Plot2D
@@ -45,6 +46,34 @@ contains
         end do
         write (u,*) '};'
     end subroutine data2d_write
+
+    subroutine plot2d_addattr(this, id, attr)
+        class(Plot2D), intent(inout) :: this
+        integer, intent(in) :: id
+        class(PlotAttr), intent(in) :: attr
+
+        type(PlotAttr), allocatable :: attrtmp(:)
+
+        if (.not. allocated(this%data2d)) then
+            stop "ERROR: Trying to add attribute, but no plots present"
+        end if
+
+        if (size(this%data2d) < id) then
+            stop "ERROR: Trying to add attribute to not existent plot."
+        end if
+
+        if (allocated(this%data2d(id)%attrs)) then
+            allocate(attrtmp(size(this%data2d(id)%attrs)+1))
+            attrtmp(:size(this%data2d(id)%attrs)) = this%data2d(id)%attrs
+            attrtmp(size(attrtmp)) = attr
+            deallocate(this%data2d(id)%attrs)
+            allocate(this%data2d(id)%attrs, source=attrtmp)
+            deallocate(attrtmp)
+        else
+            allocate(this%data2d(id)%attrs(1))
+            this%data2d(id)%attrs(1) = attr
+        end if
+    end subroutine plot2d_addattr
 
     subroutine plot2d_write(this)
         class(Plot2D), intent(in) :: this
