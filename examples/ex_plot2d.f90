@@ -7,8 +7,8 @@ program ex_plot2d
     real :: y(3) = (/1, 2, 0/)
 
     testplot = Plot2D("test.pgf")
-    testplot%axis%xlabel = "x"
-    testplot%axis%ylabel = "$y\ /\ \int$"
-    call testplot%add(x,y)
+    testplot%axis%xlabel = "$x$"
+    testplot%axis%ylabel = "$y$"
+    call testplot%add(x, y, style_only_markers())
     call testplot%write()
 end program ex_plot2d

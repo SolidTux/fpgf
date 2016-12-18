@@ -1,11 +1,13 @@
 module mod_plot2d
     use filestructure
+    use mod_plotattr
     use mod_axis
     implicit none
     private
 
     type :: Data2D
         real, allocatable :: x(:), y(:)
+        class(PlotAttr), allocatable :: attrs(:)
     contains
         procedure :: write => data2d_write
     end type Data2D
@@ -31,8 +33,11 @@ contains
 
         integer :: i
 
-        write (u,*) '\addplot'
-        write (u,*) 'coordinates {'
+        write (u,*) '\addplot+['
+        do i = 1,size(this%attrs)
+            call this%attrs(i)%write(u)
+        end do
+        write (u,*) '] coordinates {'
         do i = 1,min(size(this%x), size(this%y))
             write (u,*) '(',this%x(i), ',', this%y(i), ')'
         end do
@@ -57,17 +62,17 @@ contains
         close (u)
     end subroutine plot2d_write
 
-    subroutine plot2d_add(this, x, y)
+    subroutine plot2d_add(this, x, y, attrs)
         class(Plot2D), intent(inout) :: this
+        class(PlotAttr), intent(in), optional :: attrs(:)
         real, intent(in) :: x(:), y(:)
 
         if (allocated(this%data2d)) then
         else
             allocate(this%data2d(1))
-            allocate(this%data2d(1)%x(size(x)))
-            allocate(this%data2d(1)%y(size(y)))
-            this%data2d(1)%x = x
-            this%data2d(1)%y = y
+            allocate(this%data2d(1)%x, source=x)
+            allocate(this%data2d(1)%y, source=y)
+            allocate(this%data2d(1)%attrs, source=attrs)
         end if
     end subroutine plot2d_add
 

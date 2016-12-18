@@ -1,7 +1,5 @@
 module fpgf
     use mod_plot2d
+    use default_styles
     implicit none
-    private
-
-    public :: Plot2D
 end module fpgf
